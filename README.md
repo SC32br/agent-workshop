@@ -4,7 +4,9 @@
 
 [Открыть живой цех](https://sc32br.github.io/agent-workshop/)
 
-[![Кадр цеха](docs/workshop.jpg)](https://sc32br.github.io/agent-workshop/)
+![Живой цех](docs/workshop.gif)
+
+[Ролик со звуком](https://github.com/SC32br/agent-workshop/releases/download/demo/workshop.mp4)
 
 ```mermaid
 flowchart TB
