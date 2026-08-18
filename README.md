@@ -6,7 +6,7 @@
   <a href="https://sc32br.github.io/agent-workshop/" target="_blank" rel="noopener noreferrer">Открыть живой цех</a>
 </p>
 
-<video src="https://cdn.jsdelivr.net/gh/SC32br/agent-workshop@main/docs/workshop.mp4" poster="docs/workshop.jpg" width="100%" controls loop playsinline></video>
+<video src="https://cdn.jsdelivr.net/gh/SC32br/agent-workshop@e8cc885/docs/workshop.mp4" poster="docs/workshop.jpg" width="100%" controls loop playsinline></video>
 
 ```mermaid
 flowchart TB
