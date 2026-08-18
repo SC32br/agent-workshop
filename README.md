@@ -7,11 +7,11 @@
 ```mermaid
 flowchart TB
   work["scene-work.webp база"]
-  work --> auto["авто-оверлеи: look, chat, comm"]
-  work --> click["клик по хотспоту"]
-  auto --> gsap["GSAP opacity + параллакс"]
-  click --> lookN["scene-look-N.webp"]
-  lookN --> bubble["пузырь typewriter"]
+  work --> auto["авто-оверлеи look / chat / comm"]
+  work --> hotspot["клик по хотспоту"]
+  auto --> gsap["GSAP opacity и параллакс"]
+  hotspot --> lookFrame["scene-look-N.webp"]
+  lookFrame --> bubble["пузырь typewriter"]
 ```
 
 ## Запуск
