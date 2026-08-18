@@ -379,6 +379,7 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
   const [, startTransition] = useTransition();
 
   // Пузырь
+  const [layersOn, setLayersOn] = useState(false);
   const [bubble, setBubble] = useState<number | null>(null);
   const [bubbleFullText, setBubbleFullText] = useState("");
   const [typedLen, setTypedLen] = useState(0);
@@ -424,6 +425,7 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
   const commRef17 = useRef<HTMLImageElement>(null);
 
   const openBubble = (i: number) => {
+    setLayersOn(true);
     if (bubbleTimer.current)  clearTimeout(bubbleTimer.current);
     if (typingTimer.current)  clearInterval(typingTimer.current);
 
@@ -457,9 +459,21 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
     });
     const el = clickLookRefs[i]?.current;
     if (el) {
-      gsap.timeline()
-        .to(el, { opacity: 1, duration: 0.4, ease: "power2.inOut" })
-        .to(el, { opacity: 0, duration: 0.5, ease: "power2.inOut" }, "+=1.5");
+      const playLook = () => {
+        gsap.killTweensOf(el);
+        gsap.timeline()
+          .to(el, { opacity: 1, duration: 0.4, ease: "power2.inOut" })
+          .to(el, { opacity: 0, duration: 0.5, ease: "power2.inOut" }, "+=1.5");
+      };
+      if (el.currentSrc) {
+        playLook();
+      } else {
+        const onLoad = () => {
+          el.removeEventListener("load", onLoad);
+          playLook();
+        };
+        el.addEventListener("load", onLoad);
+      }
     }
   };
 
@@ -485,8 +499,39 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
     return () => clearInterval(id);
   }, [locale]);
 
-  // GSAP: авто-crossfade сцен + параллакс
+  // GSAP: параллакс
   useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference) and (pointer: fine)", () => {
+        const layer = layerRef.current;
+        if (!layer) return;
+        gsap.set(layer, { scale: 1.06 });
+        const lx = gsap.quickTo(layer, "xPercent", { duration: 0.7, ease: "power3" });
+        const ly = gsap.quickTo(layer, "yPercent", { duration: 0.7, ease: "power3" });
+        let rafId = 0;
+        const onMove = (e: MouseEvent) => {
+          cancelAnimationFrame(rafId);
+          rafId = requestAnimationFrame(() => {
+            const r = scene.getBoundingClientRect();
+            lx(-(e.clientX - r.left) / r.width  * 2.4 + 1.2);
+            ly(-(e.clientY - r.top)  / r.height * 2.4 + 1.2);
+          });
+        };
+        const onLeave = () => { cancelAnimationFrame(rafId); lx(0); ly(0); };
+        scene.addEventListener("mousemove", onMove);
+        scene.addEventListener("mouseleave", onLeave);
+        return () => { scene.removeEventListener("mousemove", onMove); scene.removeEventListener("mouseleave", onLeave); };
+      });
+    }, scene);
+    return () => ctx.revert();
+  }, []);
+
+  // GSAP: авто-crossfade overlay-сцен — только после pointer (когда src уже есть)
+  useEffect(() => {
+    if (!layersOn) return;
     const scene = sceneRef.current;
     if (!scene) return;
     const ctx = gsap.context(() => {
@@ -518,7 +563,7 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
           { el: commRef15.current, pool: COMM_EVENTS[15], color: ROLES[1].color, who: TEAM_WHO },
           { el: commRef16.current, pool: COMM_EVENTS[16], color: ROLES[0].color, who: ROLES[0].name },
           { el: commRef17.current, pool: COMM_EVENTS[17], color: ROLES[4].color, who: ROLES[4].name },
-        ].filter((o) => o.el) as { el: HTMLElement; pool: L[]; color: string; who: L }[];
+        ].filter((o) => o.el) as { el: HTMLImageElement; pool: L[]; color: string; who: L }[];
         overlays.forEach((o) => gsap.set(o.el, { opacity: 0 }));
         clickLookRefs.forEach((r) => { if (r.current) gsap.set(r.current, { opacity: 0 }); });
 
@@ -533,6 +578,7 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
           const pick = overlays[seqIdx % overlays.length];
           seqIdx++;
           if (!pick) { gsap.delayedCall(frnd(2, 5), tick); return; }
+          if (!pick.el.currentSrc) { gsap.delayedCall(frnd(2, 5), tick); return; }
           evId.current += 1;
           const ev = pick.pool[rnd(0, pick.pool.length - 1)];
           setEvents((p) => [{ id: evId.current, color: pick.color, who: pick.who[localeRef.current], text: ev[localeRef.current] }, ...p].slice(0, 8));
@@ -541,30 +587,9 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
         gsap.delayedCall(0.8, tick);
         return () => { cancelled = true; };
       });
-
-      mm.add("(prefers-reduced-motion: no-preference) and (pointer: fine)", () => {
-        const layer = layerRef.current;
-        if (!layer) return;
-        gsap.set(layer, { scale: 1.06 });
-        const lx = gsap.quickTo(layer, "xPercent", { duration: 0.7, ease: "power3" });
-        const ly = gsap.quickTo(layer, "yPercent", { duration: 0.7, ease: "power3" });
-        let rafId = 0;
-        const onMove = (e: MouseEvent) => {
-          cancelAnimationFrame(rafId);
-          rafId = requestAnimationFrame(() => {
-            const r = scene.getBoundingClientRect();
-            lx(-(e.clientX - r.left) / r.width  * 2.4 + 1.2);
-            ly(-(e.clientY - r.top)  / r.height * 2.4 + 1.2);
-          });
-        };
-        const onLeave = () => { cancelAnimationFrame(rafId); lx(0); ly(0); };
-        scene.addEventListener("mousemove", onMove);
-        scene.addEventListener("mouseleave", onLeave);
-        return () => { scene.removeEventListener("mousemove", onMove); scene.removeEventListener("mouseleave", onLeave); };
-      });
     }, scene);
     return () => ctx.revert();
-  }, []);
+  }, [layersOn]);
 
   // Синхронизируем высоту лог-панели со сценой
   useEffect(() => {
@@ -584,68 +609,73 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-      <div ref={sceneRef} className="relative aspect-[16/9] overflow-hidden rounded-2xl border bg-[#1a130d]">
+      <div
+        ref={sceneRef}
+        className="relative aspect-[16/9] overflow-hidden rounded-2xl border bg-[#1a130d]"
+        onPointerEnter={() => setLayersOn(true)}
+        onPointerDown={() => setLayersOn(true)}
+      >
         <div ref={layerRef} className="absolute inset-0 will-change-transform">
           {/* База */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SCENE_WORK} alt={locale === "en" ? "AI agents office" : "Офис ИИ-агентов"} fetchPriority="high" decoding="async" sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={SCENE_WORK} alt={locale === "en" ? "AI agents office" : "Офис ИИ-агентов"} fetchPriority="high" decoding="async" width={1918} height={1078} sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
           {/* Авто-overlays */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={lookImgRef}  src={SCENE_LOOK}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={lookImgRef}  src={layersOn ? SCENE_LOOK : undefined}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={chatImgRef}  src={SCENE_CHAT}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={chatImgRef}  src={layersOn ? SCENE_CHAT : undefined}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={chat2ImgRef} src={SCENE_CHAT2} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={chat2ImgRef} src={layersOn ? SCENE_CHAT2 : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={chat3ImgRef} src={SCENE_CHAT3} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={chat3ImgRef} src={layersOn ? SCENE_CHAT3 : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* Click-look overlays — по одному на каждого персонажа */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={clickLookRef0} src={SCENE_LOOKS[0]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={clickLookRef0} src={layersOn ? SCENE_LOOKS[0] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={clickLookRef1} src={SCENE_LOOKS[1]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={clickLookRef1} src={layersOn ? SCENE_LOOKS[1] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={clickLookRef2} src={SCENE_LOOKS[2]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={clickLookRef2} src={layersOn ? SCENE_LOOKS[2] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={clickLookRef3} src={SCENE_LOOKS[3]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={clickLookRef3} src={layersOn ? SCENE_LOOKS[3] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={clickLookRef4} src={SCENE_LOOKS[4]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={clickLookRef4} src={layersOn ? SCENE_LOOKS[4] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* Авто-overlay: сцены коммуникаций 0-7, 9-17, 19 */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef0} src={SCENE_COMMS[0]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef0} src={layersOn ? SCENE_COMMS[0] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef1} src={SCENE_COMMS[1]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef1} src={layersOn ? SCENE_COMMS[1] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef2} src={SCENE_COMMS[2]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef2} src={layersOn ? SCENE_COMMS[2] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef3} src={SCENE_COMMS[3]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef3} src={layersOn ? SCENE_COMMS[3] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef4} src={SCENE_COMMS[4]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef4} src={layersOn ? SCENE_COMMS[4] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef5} src={SCENE_COMMS[5]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef5} src={layersOn ? SCENE_COMMS[5] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef6} src={SCENE_COMMS[6]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef6} src={layersOn ? SCENE_COMMS[6] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef7} src={SCENE_COMMS[7]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef7} src={layersOn ? SCENE_COMMS[7] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef8}  src={SCENE_COMMS[8]}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef8}  src={layersOn ? SCENE_COMMS[8] : undefined}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef9}  src={SCENE_COMMS[9]}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef9}  src={layersOn ? SCENE_COMMS[9] : undefined}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef10} src={SCENE_COMMS[10]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef10} src={layersOn ? SCENE_COMMS[10] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef11} src={SCENE_COMMS[11]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef11} src={layersOn ? SCENE_COMMS[11] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef12} src={SCENE_COMMS[12]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef12} src={layersOn ? SCENE_COMMS[12] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef13} src={SCENE_COMMS[13]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef13} src={layersOn ? SCENE_COMMS[13] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef14} src={SCENE_COMMS[14]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef14} src={layersOn ? SCENE_COMMS[14] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef15} src={SCENE_COMMS[15]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef15} src={layersOn ? SCENE_COMMS[15] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef16} src={SCENE_COMMS[16]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef16} src={layersOn ? SCENE_COMMS[16] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img ref={commRef17} src={SCENE_COMMS[17]} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
+          <img ref={commRef17} src={layersOn ? SCENE_COMMS[17] : undefined} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
 
           {/* Хотспоты (кольца + ping) — на уровне стола/тела */}
           {ROLES.map((r, i) => (
