@@ -2,7 +2,9 @@
 
 Изометрический офис из стопки webp. Пять персонажей работают за столами. Кликни по агенту: слой look кроссфейдится через GSAP, над головой печатается реплика. Справа крутится живой лог.
 
-Демо: https://ns.нейросинк.рф/lab
+GitHub Pages static export of next build: https://sc32br.github.io/agent-workshop/
+
+Оригинал на VPS: https://ns.нейросинк.рф/lab
 
 ```mermaid
 flowchart TB
@@ -23,6 +25,7 @@ npm i && npm run dev
 ```
 
 Открой http://localhost:3000. Ключ kie для локального просмотра не нужен: кадры уже лежат в public/lab/.
+Pages is a static next-build export. Local remains the dev server.
 
 ## Как устроены слои
 

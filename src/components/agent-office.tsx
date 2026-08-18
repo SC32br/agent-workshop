@@ -28,39 +28,42 @@ type Role = {
   tasks: L[];
 };
 
-const SCENE_WORK  = "/lab/scene-work.webp";
-const SCENE_LOOK  = "/lab/scene-look.webp";
-const SCENE_CHAT  = "/lab/scene-chat.webp";
-const SCENE_CHAT2 = "/lab/scene-chat2.webp";
-const SCENE_CHAT3 = "/lab/scene-chat3.webp";
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const lab = (file: string) => `${BASE}/lab/${file}`;
+
+const SCENE_WORK  = lab("scene-work.webp");
+const SCENE_LOOK  = lab("scene-look.webp");
+const SCENE_CHAT  = lab("scene-chat.webp");
+const SCENE_CHAT2 = lab("scene-chat2.webp");
+const SCENE_CHAT3 = lab("scene-chat3.webp");
 // Индивидуальные сцены: только один персонаж смотрит на зрителя
 const SCENE_LOOKS = [
-  "/lab/scene-look-0.webp",
-  "/lab/scene-look-1.webp",
-  "/lab/scene-look-2.webp",
-  "/lab/scene-look-3.webp",
-  "/lab/scene-look-4.webp",
+  lab("scene-look-0.webp"),
+  lab("scene-look-1.webp"),
+  lab("scene-look-2.webp"),
+  lab("scene-look-3.webp"),
+  lab("scene-look-4.webp"),
 ] as const;
 // 18 сцен коммуникаций (исключена только comm-8 — пропали стулья)
 const SCENE_COMMS = [
-  "/lab/scene-comm-0.webp",
-  "/lab/scene-comm-1.webp",
-  "/lab/scene-comm-2.webp",
-  "/lab/scene-comm-3.webp",
-  "/lab/scene-comm-4.webp",
-  "/lab/scene-comm-5.webp",
-  "/lab/scene-comm-6.webp",
-  "/lab/scene-comm-7.webp",
-  "/lab/scene-comm-9.webp",
-  "/lab/scene-comm-10.webp",
-  "/lab/scene-comm-11.webp",
-  "/lab/scene-comm-12.webp",
-  "/lab/scene-comm-13.webp",
-  "/lab/scene-comm-14.webp",
-  "/lab/scene-comm-15.webp",
-  "/lab/scene-comm-16.webp",
-  "/lab/scene-comm-17.webp",
-  "/lab/scene-comm-19.webp",
+  lab("scene-comm-0.webp"),
+  lab("scene-comm-1.webp"),
+  lab("scene-comm-2.webp"),
+  lab("scene-comm-3.webp"),
+  lab("scene-comm-4.webp"),
+  lab("scene-comm-5.webp"),
+  lab("scene-comm-6.webp"),
+  lab("scene-comm-7.webp"),
+  lab("scene-comm-9.webp"),
+  lab("scene-comm-10.webp"),
+  lab("scene-comm-11.webp"),
+  lab("scene-comm-12.webp"),
+  lab("scene-comm-13.webp"),
+  lab("scene-comm-14.webp"),
+  lab("scene-comm-15.webp"),
+  lab("scene-comm-16.webp"),
+  lab("scene-comm-17.webp"),
+  lab("scene-comm-19.webp"),
 ] as const;
 
 const ROLES: Role[] = [

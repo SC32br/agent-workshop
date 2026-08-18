@@ -3,7 +3,8 @@
 Stacked webp frames + GSAP crossfade. Click a character, they look up and speak. No Three.js, no Pixi, no canvas engine.
 
 - GitHub: https://github.com/SC32br/agent-workshop
-- Demo: https://ns.нейросинк.рф/lab
+- GitHub Pages: https://sc32br.github.io/agent-workshop/
+- Demo (VPS original): https://ns.нейросинк.рф/lab
 - Author: Sergey Nozdrov (SC32br), https://ns.нейросинк.рф/
 - License: MIT
 
