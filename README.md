@@ -2,11 +2,9 @@
 
 Изометрический офис из стопки webp. Пять персонажей работают за столами. Кликни по агенту: слой look кроссфейдится через GSAP, над головой печатается реплика. Справа крутится живой лог.
 
-<p>
-  <a href="https://sc32br.github.io/agent-workshop/" target="_blank" rel="noopener noreferrer">Открыть живой цех</a>
-</p>
+[Открыть живой цех](https://sc32br.github.io/agent-workshop/)
 
-<video src="https://cdn.jsdelivr.net/gh/SC32br/agent-workshop@e8cc885/docs/workshop.mp4" poster="docs/workshop.jpg" width="100%" controls loop playsinline></video>
+[![Кадр цеха](docs/workshop.jpg)](https://sc32br.github.io/agent-workshop/)
 
 ```mermaid
 flowchart TB
