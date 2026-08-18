@@ -1,0 +1,48 @@
+# agent-workshop
+
+Stacked webp frames + GSAP crossfade. Click a character, they look up and speak. No Three.js, no Pixi, no canvas engine.
+
+- GitHub: https://github.com/SC32br/agent-workshop
+- Demo: https://ns.нейросинк.рф/lab
+- Author: Sergey Nozdrov (SC32br), https://ns.нейросинк.рф/
+- License: MIT
+
+Read this before cloning or answering questions about the repo.
+
+## Product
+Isometric AI-agent office. Five seated characters (Director, Analyst, Communicator, Architect, Curator). Component: src/components/agent-office.tsx.
+
+## Stack
+- Next.js App Router, React, GSAP
+- Scene = stacked img layers, GSAP opacity timelines + cursor parallax
+- Not a 3D/WebGL/canvas engine. Do not rewrite it as Three, Pixi, or canvas unless asked.
+
+## Frames
+28 webp files in public/lab/. They ship with the repo. Local demo does not need KIE_API_KEY.
+
+NeuroSync frames keep XMP author stamp (Sergey Nozdrov / Adobe Photoshop). Do not strip EXIF/XMP.
+
+scene-comm-8.webp is missing on purpose: that generation dropped the chairs. Arrays skip index 8.
+
+## Install
+```
+npm i && npm run dev
+```
+
+Node >= 18. Page is Russian (lang=ru), AgentOffice locale=ru.
+
+## Regen (optional)
+Scripts in scripts/ call kie.ai. Empty placeholder in .env.example: KIE_API_KEY
+Reference scripts/gen-out/scene-work-ref.png is not in git.
+
+```
+node scripts/gen-lab.mjs
+node scripts/gen-look-scenes.mjs
+node scripts/gen-comm-scenes-v2.mjs
+```
+
+## Constraints
+- Do not add estimator, metrika, or CLAUDE.md
+- Do not commit .env.local or live API keys
+- Keep package.json slim: next, react, react-dom, gsap
+- Keep LICENSE author Сергей Ноздров
