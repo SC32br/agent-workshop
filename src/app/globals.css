@@ -1,5 +1,19 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
 :root {
   color-scheme: dark;
+  --background: #0c0a09;
+  --foreground: #e7e5e4;
+  --muted-foreground: #a8a29e;
+  --card: #1c1917;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
 }
 
 html,
@@ -11,28 +25,4 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-a {
-  color: #67e8f9;
-}
-
-main {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
-}
-
-header {
-  margin-bottom: 1.5rem;
-}
-
-header h1 {
-  margin: 0 0 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 650;
-}
-
-header p {
-  margin: 0 0 0.5rem;
-  color: #a8a29e;
-  line-height: 1.45;
-}
+a { color: #67e8f9; }
