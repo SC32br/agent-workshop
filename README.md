@@ -4,6 +4,8 @@
 
 Демо: <a href="https://sc32br.github.io/agent-workshop/" target="_blank" rel="noopener noreferrer">sc32br.github.io/agent-workshop</a>
 
+<video src="docs/workshop.mp4" width="100%" autoplay muted loop playsinline controls></video>
+
 ```mermaid
 flowchart TB
   work["scene-work.webp база"]
