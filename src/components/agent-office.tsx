@@ -618,7 +618,7 @@ export default function AgentOffice({ locale = "ru" }: { locale?: "ru" | "en" })
         <div ref={layerRef} className="absolute inset-0 will-change-transform">
           {/* База */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SCENE_WORK} alt={locale === "en" ? "AI agents office" : "Офис ИИ-агентов"} fetchPriority="high" decoding="async" width={1918} height={1078} sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={SCENE_WORK} alt={locale === "en" ? "AI agents office" : "Офис ИИ-агентов"} fetchPriority="high" decoding="async" width={1280} height={720} sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
           {/* Авто-overlays */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img ref={lookImgRef}  src={layersOn ? SCENE_LOOK : undefined}  alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
